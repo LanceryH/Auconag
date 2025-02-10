@@ -30,3 +30,9 @@ function draw() {
     sphere(6371, 24, 24);
     pop();
 }
+
+function windowResized() {
+    let width_live = document.getElementById('sketch').clientWidth;
+    let height_live = document.getElementById('sketch').clientHeight;
+    resizeCanvas(width_live, height_live);
+  }
