@@ -9,6 +9,11 @@ function setup() {
     const canvas = createCanvas(width, height, WEBGL);
     canvas.parent('sketch');
     background(220);
+
+    const button = document.getElementById('run');
+    button.addEventListener('click', () => {
+      alert('Button clicked!');
+    });
 }
 
 function draw() {
