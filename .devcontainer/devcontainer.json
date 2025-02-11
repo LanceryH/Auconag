@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json.
 {
-	"name": "simple-flask-server-container",
-	"image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye",
+	"name": "Auconag-container",
+	"image": "mcr.microsoft.com/devcontainers/python:3.8-bullseye",
 
 	// See https://containers.dev/implementors/features/
 	"features": {
