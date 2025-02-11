@@ -11,3 +11,9 @@ Autonomous Control Agent by Reinforcement learning
 4. Press Ctrl+Shift+P and type "Dev Containers:  Reopen in Container" then press Enter
 5. Now the app is ready to use/code 
 6. While being in the container you can still git push the changes !
+
+
+GIT COMMANDS:
+
+git fetch origin NOM_DE_L'AUTRE_BRANCH    # Download the info from the branch
+git merge origin/NOM_DE_NOTRE_BRANCH      # Import and show the differences
