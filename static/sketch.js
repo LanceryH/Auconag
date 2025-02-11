@@ -10,9 +10,17 @@ function setup() {
     canvas.parent('sketch');
     background(220);
 
+    socket = io(); 
+    socket.on('send_data', function(data) {
+        names = data["Names"];
+        colors = data["Colors"];
+        sat_data = data;
+    });
+
     const button = document.getElementById('run');
     button.addEventListener('click', () => {
       alert('Button clicked!');
+      socket.emit('button_clicked', 'Button clicked!');
     });
 }
 
