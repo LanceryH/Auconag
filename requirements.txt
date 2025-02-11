@@ -2,3 +2,6 @@ Flask
 gunicorn
 Flask-SocketIO
 numpy
+scipy
+poliastro
+utils
