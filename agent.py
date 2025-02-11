@@ -13,30 +13,11 @@ class Motion:
     """
 
     motion: np.ndarray
-
-    @property
-    def pos_x(self):
-        return self.motion[0,:]
-    @property
-    def pos_y(self):
-        return self.motion[1,:]
-    @property
-    def pos_z(self):
-        return self.motion[2,:]
-    @property
-    def vel_x(self):
-        return self.motion[3,:]
-    @property
-    def vel_y(self):
-        return self.motion[4,:]
-    @property
-    def vel_z(self):
-        return self.motion[5,:]
     
 @dataclass
 class Object:
     id: int
-    #motion: Motion = Motion([[EARTH_RADIUS+400,EARTH_RADIUS+400,EARTH_RADIUS+400,0,0,0]])
+    motion = [[EARTH_RADIUS+400,EARTH_RADIUS+400,EARTH_RADIUS+400,0,0,0]]
 
     def __post_init__(self):
         return
