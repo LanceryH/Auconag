@@ -16,4 +16,5 @@ Autonomous Control Agent by Reinforcement learning
 GIT COMMANDS:
 
 git fetch origin NOM_DE_L'AUTRE_BRANCH    # Download the info from the branch
+
 git merge origin/NOM_DE_NOTRE_BRANCH      # Import and show the differences
