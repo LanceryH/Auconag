@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 import numpy as np
+from constants import *
 
 @dataclass
-class System:
+class Motion:
     """
     motion = [[x0, y0, z0, vx0, vy0, vz0],
               [x1, y1, z1, vx1, vy1, vz1],
@@ -34,4 +35,8 @@ class System:
     
 @dataclass
 class Object:
-    position = (0, 0)
+    id: int
+    #motion: Motion = Motion([[EARTH_RADIUS+400,EARTH_RADIUS+400,EARTH_RADIUS+400,0,0,0]])
+
+    def __post_init__(self):
+        return

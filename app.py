@@ -3,6 +3,7 @@ from flask_socketio import SocketIO
 import threading
 import time
 from datetime import datetime, timezone
+#from agent import Object
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -14,7 +15,8 @@ def index():
 
 @socketio.on('button_clicked')
 def handle_button_clicked(message):
-    print(f'Received message: {message}')
+    #rocket = Object(0)
+    print(f'Received message: {message} \n rocket is ')
 
 
 if __name__ == '__main__':
