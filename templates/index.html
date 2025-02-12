@@ -10,21 +10,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-  <header>
-      <div>
-          <h1 class="title">AUCONAG</h1>
-          <p class="description">Pour l'instant ca fait rien mdr</p>
-      </div>
-      <div id="cube-container">
-          <div id="cube"></div>
-      </div>
-  </header>
-  <nav>
-      <ul>
-          <li><button id="create">Create</a></li>
-          <li><button id="run">Run</a></li>
-      </ul>
-  </nav>
-    <div id="sketch"></div>
+<div class="container">
+    <div class="sidebar">
+        <header>
+            <div>
+                <h1 class="title">AUCONAG</h1>
+            </div>
+        </header>
+        <nav>
+            <ul>
+            <li><button id="create">Create</a></li>
+            <li><button id="run">Run</a></li>
+            <li><button id="stop">Stop</a></li>
+            </ul>
+        </nav>
+        <div class="infos">
+            <div class="info-speedup">SPEED UP: <span id='sim'></span></div>
+            <div class="info-fps">FPS: <span id='aff'></span></div>
+        </div>
+</div>
+    <div id="sketch" class="sketch_div"></div>
+</div>
 </body>
 </html>

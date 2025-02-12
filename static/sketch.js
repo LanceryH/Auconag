@@ -1,5 +1,7 @@
 let create_clicked = false;
 let run_clicked = false;
+let freq_sim = 0;
+let freq_aff = 0;
 
 function preload() {
     img = loadImage(imagePath); // Use the image path passed from HTML
@@ -18,11 +20,15 @@ function setup() {
         sat_pos_ini = data;
         create_clicked = true;
     });
-
-    socket = io(); 
     socket.on('801', function(data) {
         sat_pos_fin = data;
         run_clicked = true;
+    });
+    socket.on('802', function(data) {
+        freq_sim = data;
+    });
+    socket.on('803', function(data) {
+        freq_aff = data;
     });
 
     const button_create = document.getElementById('create');
@@ -30,7 +36,6 @@ function setup() {
       //alert('Create');
       socket.emit('button_create', 'Button clicked!');
     });
-
     const button_run = document.getElementById('run');
     button_run.addEventListener('click', () => {
       //alert('Button clicked!');
@@ -71,6 +76,9 @@ function draw() {
         endShape();
         pop();
     }
+
+    document.getElementById("sim").textContent=freq_sim;
+    document.getElementById("aff").textContent=freq_aff;
 }
 
 function windowResized() {
