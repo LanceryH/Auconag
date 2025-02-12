@@ -1,5 +1,5 @@
-let sat_state = false;
-let sat_state_prop = false;
+let create_clicked = false;
+let run_clicked = false;
 
 function preload() {
     img = loadImage(imagePath); // Use the image path passed from HTML
@@ -15,14 +15,14 @@ function setup() {
 
     socket = io(); 
     socket.on('800', function(data) {
-        sat_pos = data;
-        sat_state = true;
+        sat_pos_ini = data;
+        create_clicked = true;
     });
 
     socket = io(); 
     socket.on('801', function(data) {
-        sat_pos_prop = data;
-        sat_state_prop = true;
+        sat_pos_fin = data;
+        run_clicked = true;
     });
 
     const button_create = document.getElementById('create');
@@ -41,7 +41,7 @@ function setup() {
 function draw() {
     background(0);
     orbitControl(1, 1, 1);
-    scale(0.02);
+    scale(0.03);
 
     push();
     texture(img);
@@ -52,22 +52,22 @@ function draw() {
     sphere(6371, 24, 24);
     pop();
 
-    if (sat_state) {
+    if (create_clicked) {
         push();
         strokeWeight(16);
         stroke(255,0,0);
         beginShape(POINTS);
-        vertex(sat_pos[0], sat_pos[1], sat_pos[2]);
+        vertex(sat_pos_ini[0], sat_pos_ini[1], sat_pos_ini[2]);
         endShape();
         pop();
     }
 
-    if (sat_state_prop) {
+    if (run_clicked) {
         push();
         strokeWeight(16);
         stroke(0,255,0);
         beginShape(POINTS);
-        vertex(sat_pos_prop[0], sat_pos_prop[1], sat_pos_prop[2]);
+        vertex(sat_pos_fin[0], sat_pos_fin[1], sat_pos_fin[2]);
         endShape();
         pop();
     }
