@@ -41,12 +41,17 @@ function setup() {
       //alert('Button clicked!');
       socket.emit('button_run', 'Button clicked!');
     });
+    const button_test = document.getElementById('test');
+    button_test.addEventListener('click', () => {
+      //alert('Button clicked!');
+      socket.emit('button_test', 'Button clicked!');
+    });
 }
 
 function draw() {
     background(0);
     orbitControl(1, 1, 1);
-    scale(0.03);
+    scale(0.04);
 
     push();
     texture(img);

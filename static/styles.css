@@ -115,6 +115,7 @@ nav ul li button:hover {
   width: calc(100vw - 1rem); /* Adjust to full width */
   height: calc(100vh - 1rem); /* Full height */
   flex-grow: 1; /* Allow the container to grow */
+  /*column-gap: 10px;*/
 }
 
 .sidebar {
@@ -122,6 +123,7 @@ nav ul li button:hover {
   flex-shrink: 0; /* Prevent the sidebar from shrinking or expanding */
   background-color: #000000;
   padding: 20px;
+  padding-right: 21px;
   display: flex;
   flex-direction: column;
   gap: 20px;
