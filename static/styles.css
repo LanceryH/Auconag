@@ -98,13 +98,7 @@ nav ul li button:hover {
   color: #ffd700; /* Change text color on hover */
 }
 
-.info-speedup{
-  font-weight: bold;
-  color: #ffffff;
-  padding-left: 5px;
-}
-
-.info-fps{
+.info{
   font-weight: bold;
   color: #ffffff;
   padding-left: 5px;
