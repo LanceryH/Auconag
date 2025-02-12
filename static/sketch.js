@@ -82,7 +82,7 @@ function draw() {
 }
 
 function windowResized() {
-    let width_live = document.getElementById('sketch').clientWidth;
-    let height_live = document.getElementById('sketch').clientHeight;
+    let width_live = document.getElementById('contain').clientWidth-290;
+    let height_live = document.getElementById('contain').clientHeight;
     resizeCanvas(width_live, height_live);
   }

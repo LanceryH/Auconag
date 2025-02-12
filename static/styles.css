@@ -21,7 +21,7 @@ body {
   max-width: calc(100vw - 1rem);
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow-x: scroll;
   overflow-y: scroll;
   background-color: #ffffff;
 }
@@ -31,29 +31,10 @@ body {
 }
 /* CSS styles for header */
 header {
-  --pad: 20px;
-  display: flex;
-  align-items: center;
+  text-align: center;
   justify-content: space-between;
   padding: 10px;
   background-color: black;
-}
-
-/* CSS styles for cube container */
-#cube-container {
-  width: 110px;
-  height: 100px;
-  position: relative;
-  perspective: 1000px; /* Define the perspective for 3D rendering */
-}
-
-/* CSS styles for cube */
-#cube {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  animation: spin 2s linear infinite;
-  transform-style: preserve-3d;
 }
 
 .content {
@@ -110,6 +91,7 @@ nav ul li button {
   text-decoration: none;
   color: #ffffff; /* White text color for navigation links */
   font-weight: bold;
+  font-size: 16px;
 }
 
 nav ul li button:hover {
@@ -128,23 +110,22 @@ nav ul li button:hover {
   padding-left: 5px;
 }
 
-#sketch{
+#sketch {
   display: flex;
-  width: 100vw;
-  height: calc(100vh - 1rem);
-  justify-content: center;
-  align-items: center;
+  flex: 1; /* Allow the sketch div to grow */
   background-color: black;
 }
 
 .container {
   display: flex;
+  width: calc(100vw - 1rem); /* Adjust to full width */
   height: calc(100vh - 1rem); /* Full height */
+  flex-grow: 1; /* Allow the container to grow */
 }
 
 .sidebar {
   width: 250px; /* Sidebar width */
-  /*height: 100vh;*/
+  flex-shrink: 0; /* Prevent the sidebar from shrinking or expanding */
   background-color: #000000;
   padding: 20px;
   display: flex;
