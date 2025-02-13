@@ -11,15 +11,15 @@ def force(m1, X1, m2, X2):
 
 def f(t, y, M):
     """Computes the derivatives for the system of equations."""
-    nb_corps = len(M)
+    N = len(M)
     F = np.zeros_like(y)
-    for i in range(nb_corps):
+    for i in range(N):
         S = np.zeros(3)
-        for j in range(nb_corps):
+        for j in range(N):
             if j != i:
-                S += force(M[i], y[i*3:(i+1)*3], M[j], y[j*3:(j+1)*3])
-        F[i*3:(i+1)*3] = y[nb_corps*3 + i*3 : nb_corps*3 + (i+1)*3]
-        F[nb_corps*3 + i*3 : nb_corps*3 + (i+1)*3] = S / M[i]
+                S += force(M[i], y[i][:3], M[j], y[j][:3])
+        F[i][:3] = y[i][3:6]
+        F[i][3:6] = S / M[i] + y[i][6:9]
     return F    
 
 def RK4(t0, tf, y, N, M):

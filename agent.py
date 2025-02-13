@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import random
 import numpy as np
+from system import gauss_jackson
 
 # Colors
 WHITE = (255, 255, 255)
@@ -83,10 +84,10 @@ class DQNAgent:
 # Rocket Simulation
 def get_rocket_state():
     #return np.array([WIDTH // 2, HEIGHT - 100, 0, 0, 0, 0])  # x, y, vx, vy, ax, ay
-    return np.array([-6545, -3490, 2500, -3.457, 6.618, 2.533, 0, 0, 0])
+    return np.array([-6545e3, -3490e3, 2500e3, -3.457e3, 6.618e3, 2.533e3, 0, 0, 0])
 
-def update_rocket(state, action):
-    x, y, z, vx, vy, vz, ax, ay, az= state
+def update_rocket(state, action, step, M):
+    x, y, z, vx, vy, vz, ax, ay, az = state
 
     thrust_x = 0
     thrust_y = 0
@@ -102,22 +103,18 @@ def update_rocket(state, action):
         thrust_z = 1.5
     
     ax = thrust_x
-    ay = thrust_y - 0.1  # Gravity
+    ay = thrust_y
     az = thrust_z
 
-    vx += ax
-    vy += ay
-    vz += az
-    x += vx
-    y += vy
-    z += vz
 
+    new_state = gauss_jackson(0, step, np.array([[x, y, z, vx, vy, vz, ax, ay, az],[0,0,0,0,0,0,0,0,0]]), 10, M)
+    
     d = np.linalg.norm([x,y,z])
 
     reward = -abs((d - 6371)/1000)  # Reward staying centered & stable speed
     done = d > 6371*2 or d < 6371 # Reset if altitude exceeds initial height
     
-    return np.array([x, y, z, vx, vy, vz, ax, ay, az]), reward, done
+    return new_state[0], reward, done
 
 # Main loop
 def run_simulation(episodes=500):
@@ -145,6 +142,3 @@ def run_simulation(episodes=500):
         print(f"Episode {episode+1}: Total Reward: {total_reward}")
     
     return agent
-
-if __name__ == "__main__":
-    trained_agent = run_simulation()
