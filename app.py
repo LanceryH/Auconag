@@ -65,33 +65,23 @@ def handle_button_clicked(message):
                         mass=100)
 
     agent = DQNAgent(agent_dyn, state_dim=9, action_dim=3)
-    mass = 100
 
     for episode in range(EPISODES):
-        total_reward = 0
-        done = False
-
         socketio.emit('803', FREQ_AFF)
 
         start = time.time()
         live_sim = 0
         live_aff = 0
         tic = 1/FREQ_AFF
-        end = 2000 #seconds
         step = 1
         send_status = False
         
-        while not done:
+        while agent.active:
 
             t0 = time.time()
             live_sim += step
             live_aff = time.time() - start
-            action = agent.select_action()
-            next_dynamic, reward, done = agent.update_state(action, step, live_sim, end, mass)
-            agent.store_transition((agent.dynamic.state, action, reward, next_dynamic.state, done))
-            agent.dynamic.update_to(next_dynamic)
-            total_reward += reward
-            agent.train()
+            agent.train_me()
             t1 = time.time()
 
             if (live_aff <= tic) & (send_status == False):
@@ -108,12 +98,14 @@ def handle_button_clicked(message):
                 time.sleep(step/FREQ_SIM - (t1-t0))
 
         agent_dyn = Dynamic(pos=[-6545e3, -3490e3, 2500e3],
-                        vel=[-3.457e3, 6.618e3, 2.533e3],
-                        acc=[0, 0, 0],
-                        mass=100)
+                            vel=[-3.457e3, 6.618e3, 2.533e3],
+                            acc=[0, 0, 0],
+                            mass=100)
+                            
         agent.update_target_network(agent_dyn)
-        print(f"Episode {episode+1}: Total Reward: {total_reward}")
-    
+
+        print(f"Episode {episode+1}: Total Reward: {0}")
+
     return agent
     
     

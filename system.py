@@ -1,5 +1,6 @@
 import numpy as np
 from dynamic import *
+from constants import *
 
 def force(m1, X1, m2, X2):
     """Compute the gravitational force between two masses."""
@@ -23,11 +24,11 @@ def f(t, y, M):
         F[i][3:6] = S / M[i] + y[i][6:9]
     return F    
 
-def RK4(t0, tf, y, N, M):
+def RK4(y, N, M):
     """Runge-Kutta 4th order solver."""
-    t = t0
-    h = (tf-t0)/N
-    while t < tf: 
+    t = 0
+    h = SIM_STEP/N
+    while t < SIM_STEP: 
         k1 = h * f(t, y, M)
         k2 = h * f(t + h/2, y + k1/2, M)
         k3 = h * f(t + h/2, y + k2/2, M)
@@ -48,16 +49,16 @@ def verlet(t0, tf, y, N, M):
         t += h
     return y
 
-def gauss_jackson(t0, tf, y, N, M):
+def gauss_jackson(y, N, M):
     """Gauss-Jackson implicit predictor-corrector solver."""
-    t = t0
-    h = (tf - t0) / N
+    t = 0
+    h = SIM_STEP / N
     # Initial steps using Verlet integration
     y_prev = y - h * f(t, y, M)
     y_curr = y
     y_next = y + h * f(t, y, M)
     
-    while t < tf:
+    while t < SIM_STEP:
         y_pred = 2 * y_curr - y_prev + h**2 * f(t, y_curr, M)
         y_corr = y_curr + 0.5 * h * (f(t, y_curr, M) + f(t + h, y_pred, M))
         y_prev = y_curr

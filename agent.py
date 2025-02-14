@@ -45,6 +45,9 @@ class DQNAgent:
     
         self.state_json = {}
 
+        self.total_reward = 0
+        self.active = True
+
     def store_transition(self, transition):
         if len(self.memory) > self.max_memory:
             self.memory.pop(0)
@@ -84,8 +87,10 @@ class DQNAgent:
     def update_target_network(self, new_dinamic):
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.dynamic.update_to(new_dinamic)
+        self.total_reward = 0
+        self.active = True
 
-    def update_state(self, action, step, live_sim, end, m):
+    def update_state(self, action):
         x, y, z, vx, vy, vz, ax, ay, az = self.dynamic.state
 
         thrust_x = 0
@@ -106,12 +111,20 @@ class DQNAgent:
         az = thrust_z
 
 
-        new_dyn = gauss_jackson(0, step, np.array([[x, y, z, vx, vy, vz, ax, ay, az],[0,0,0,0,0,0,0,0,0]]), 10, [m, EARTH_MASS])
+        new_dyn = gauss_jackson(np.array([[x, y, z, vx, vy, vz, ax, ay, az],[0,0,0,0,0,0,0,0,0]]), 10, [self.dynamic.mass, EARTH_MASS])
 
         d = np.linalg.norm([x,y,z])
         v = np.linalg.norm([vx,vy,vz])
 
         reward = -abs(d-6371e3) -abs(v) # Reward staying centered & stable speed
-        done = d > 15371e3 or d < 6371e3 or live_sim > end# Reset if altitude exceeds initial height
+        self.active = not (d > 15371e3 or d < 6371e3) # Reset if altitude exceeds initial height
 
-        return new_dyn, reward, done
+        return new_dyn, reward
+    
+    def train_me(self):
+        action = self.select_action()
+        next_dynamic, reward = self.update_state(action)
+        self.store_transition((self.dynamic.state, action, reward, next_dynamic.state, self.active))
+        self.dynamic.update_to(next_dynamic)
+        self.total_reward += reward
+        self.train()
