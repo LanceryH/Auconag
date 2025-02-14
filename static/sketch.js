@@ -67,7 +67,7 @@ function draw() {
         strokeWeight(16);
         stroke(255,0,0);
         beginShape(POINTS);
-        vertex(sat_pos_ini[0], sat_pos_ini[1], sat_pos_ini[2]);
+        vertex(sat_pos_ini[0]/1000, sat_pos_ini[1]/1000, sat_pos_ini[2]/1000);
         endShape();
         pop();
     }
@@ -77,7 +77,7 @@ function draw() {
         strokeWeight(16);
         stroke(0,255,0);
         beginShape(POINTS);
-        vertex(sat_pos_fin[0], sat_pos_fin[1], sat_pos_fin[2]);
+        vertex(sat_pos_fin[0]/1000, sat_pos_fin[1]/1000, sat_pos_fin[2]/1000);
         endShape();
         pop();
     }

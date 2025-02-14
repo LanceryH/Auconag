@@ -4,10 +4,8 @@ import torch.optim as optim
 import random
 import numpy as np
 from system import gauss_jackson
-
-# Colors
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
+from constants import *
+from dynamic import *
 
 # Define the Deep Q-Network (DQN)
 class DQN(nn.Module):
@@ -24,7 +22,10 @@ class DQN(nn.Module):
 
 # Define the agent
 class DQNAgent:
-    def __init__(self, state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01):
+    def __init__(self, dynamic, state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01):
+
+        self.dynamic: Dynamic = dynamic
+
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.gamma = gamma
@@ -42,15 +43,17 @@ class DQNAgent:
         self.batch_size = 64
         self.max_memory = 10000
     
+        self.state_json = {}
+
     def store_transition(self, transition):
         if len(self.memory) > self.max_memory:
             self.memory.pop(0)
         self.memory.append(transition)
     
-    def select_action(self, state):
+    def select_action(self):
         if random.random() < self.epsilon:
             return random.randint(0, self.action_dim - 1)
-        state = torch.tensor(state, dtype=torch.float32).to(self.device).unsqueeze(0)
+        state = torch.tensor(self.dynamic.state, dtype=torch.float32).to(self.device).unsqueeze(0)
         with torch.no_grad():
             return torch.argmax(self.policy_net(state)).item()
     
@@ -59,7 +62,7 @@ class DQNAgent:
             return
         batch = random.sample(self.memory, self.batch_size)
         states, actions, rewards, next_states, dones = zip(*batch)
-        
+
         states = torch.tensor(states, dtype=torch.float32).to(self.device)
         actions = torch.tensor(actions, dtype=torch.int64).to(self.device)
         rewards = torch.tensor(rewards, dtype=torch.float32).to(self.device)
@@ -78,67 +81,37 @@ class DQNAgent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
     
-    def update_target_network(self):
+    def update_target_network(self, new_dinamic):
         self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.dynamic.update_to(new_dinamic)
 
-# Rocket Simulation
-def get_rocket_state():
-    #return np.array([WIDTH // 2, HEIGHT - 100, 0, 0, 0, 0])  # x, y, vx, vy, ax, ay
-    return np.array([-6545e3, -3490e3, 2500e3, -3.457e3, 6.618e3, 2.533e3, 0, 0, 0])
+    def update_state(self, action, step, live_sim, end, m):
+        x, y, z, vx, vy, vz, ax, ay, az = self.dynamic.state
 
-def update_rocket(state, action, step, M):
-    x, y, z, vx, vy, vz, ax, ay, az = state
+        thrust_x = 0
+        thrust_y = 0
+        thrust_z = 0
 
-    thrust_x = 0
-    thrust_y = 0
-    thrust_z = 0
+        if action == 0:
+            thrust_x = 150
 
-    if action == 0:
-        thrust_x = 1.5
-
-    elif action == 1:
-        thrust_y = 1.5
-        
-    elif action == 2:
-        thrust_z = 1.5
-    
-    ax = thrust_x
-    ay = thrust_y
-    az = thrust_z
-
-
-    new_state = gauss_jackson(0, step, np.array([[x, y, z, vx, vy, vz, ax, ay, az],[0,0,0,0,0,0,0,0,0]]), 10, M)
-    
-    d = np.linalg.norm([x,y,z])
-
-    reward = -abs((d - 6371)/1000)  # Reward staying centered & stable speed
-    done = d > 6371*2 or d < 6371 # Reset if altitude exceeds initial height
-    
-    return new_state[0], reward, done
-
-# Main loop
-def run_simulation(episodes=500):
-    agent = DQNAgent(state_dim=6, action_dim=9)
-    
-    for episode in range(episodes):
-        state = get_rocket_state()
-        total_reward = 0
-        done = False
-        
-        while not done:
-            action = agent.select_action(state)
-            next_state, reward, done = update_rocket(state, action)
-            agent.store_transition((state, action, reward, next_state, done))
-            state = next_state
-            total_reward += reward
-            agent.train()
+        elif action == 1:
+            thrust_y = 150
             
-            #pygame.draw.rect(screen, RED, (state[0] - 10, state[1] - 20, 20, 40))
-            #socketio.emit('800', state)
-            #pygame.display.flip()
-            #clock.tick(30)
+        elif action == 2:
+            thrust_z = 150
         
-        agent.update_target_network()
-        print(f"Episode {episode+1}: Total Reward: {total_reward}")
-    
-    return agent
+        ax = thrust_x
+        ay = thrust_y
+        az = thrust_z
+
+
+        new_dyn = gauss_jackson(0, step, np.array([[x, y, z, vx, vy, vz, ax, ay, az],[0,0,0,0,0,0,0,0,0]]), 10, [m, EARTH_MASS])
+
+        d = np.linalg.norm([x,y,z])
+        v = np.linalg.norm([vx,vy,vz])
+
+        reward = -abs(d-6371e3) -abs(v) # Reward staying centered & stable speed
+        done = d > 15371e3 or d < 6371e3 or live_sim > end# Reset if altitude exceeds initial height
+
+        return new_dyn, reward, done

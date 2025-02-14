@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO
+from dynamic import *
 from constants import *
 from system import *
 from agent import *
@@ -45,7 +46,7 @@ def handle_button_clicked(message):
         t1 = time.time()
 
         if (live_aff <= tic) & (send_status == False):
-            socketio.emit('801', (Y[0][:3]/1000).tolist())
+            socketio.emit('801', (Y[0][:3]).tolist())
             socketio.emit('802', min(FREQ_SIM, int(step/(t1-t0))))
             send_status = True
 
@@ -58,14 +59,20 @@ def handle_button_clicked(message):
 
 @socketio.on('button_test')
 def handle_button_clicked(message):
-    agent = DQNAgent(state_dim=9, action_dim=3)
-    M = np.array([100, 6e24])
+    agent_dyn = Dynamic(pos=[-6545e3, -3490e3, 2500e3],
+                        vel=[-3.457e3, 6.618e3, 2.533e3],
+                        acc=[0, 0, 0],
+                        mass=100)
+
+    agent = DQNAgent(agent_dyn, state_dim=9, action_dim=3)
+    mass = 100
 
     for episode in range(EPISODES):
-        state = get_rocket_state()
         total_reward = 0
         done = False
-        
+
+        socketio.emit('803', FREQ_AFF)
+
         start = time.time()
         live_sim = 0
         live_aff = 0
@@ -74,22 +81,23 @@ def handle_button_clicked(message):
         step = 1
         send_status = False
         
-        while not done or live_sim <= end:
+        while not done:
 
             t0 = time.time()
             live_sim += step
             live_aff = time.time() - start
-            action = agent.select_action(state)
-            next_state, reward, done = update_rocket(state, action, step, M)
-            agent.store_transition((state, action, reward, next_state, done))
-            state = next_state
+            action = agent.select_action()
+            next_dynamic, reward, done = agent.update_state(action, step, live_sim, end, mass)
+            agent.store_transition((agent.dynamic.state, action, reward, next_dynamic.state, done))
+            agent.dynamic.update_to(next_dynamic)
             total_reward += reward
             agent.train()
             t1 = time.time()
 
             if (live_aff <= tic) & (send_status == False):
-                socketio.emit('801', (state[:3]/1000).tolist())
+                socketio.emit('801', agent.dynamic.state[:3])
                 socketio.emit('802', min(FREQ_SIM, int(step/(t1-t0))))
+    
                 send_status = True
 
             if live_aff > tic:
@@ -99,7 +107,11 @@ def handle_button_clicked(message):
             if t1-t0 < step/FREQ_SIM:
                 time.sleep(step/FREQ_SIM - (t1-t0))
 
-        agent.update_target_network()
+        agent_dyn = Dynamic(pos=[-6545e3, -3490e3, 2500e3],
+                        vel=[-3.457e3, 6.618e3, 2.533e3],
+                        acc=[0, 0, 0],
+                        mass=100)
+        agent.update_target_network(agent_dyn)
         print(f"Episode {episode+1}: Total Reward: {total_reward}")
     
     return agent

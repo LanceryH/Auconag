@@ -1,4 +1,5 @@
 import numpy as np
+from dynamic import *
 
 def force(m1, X1, m2, X2):
     """Compute the gravitational force between two masses."""
@@ -63,4 +64,4 @@ def gauss_jackson(t0, tf, y, N, M):
         y_curr = y_corr
         t += h
     
-    return y_curr
+    return Dynamic(pos=y_curr[0][:3], vel=y_curr[0][3:6], acc=y_curr[0][6:9], mass=M[0])
