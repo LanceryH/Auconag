@@ -96,6 +96,8 @@ def handle_button_clicked(message):
 
             if t1-t0 < step/FREQ_SIM:
                 time.sleep(step/FREQ_SIM - (t1-t0))
+                
+        print(f"Episode {episode+1}: Total Reward: {agent.total_reward}")
 
         agent_dyn = Dynamic(pos=[-6545e3, -3490e3, 2500e3],
                             vel=[-3.457e3, 6.618e3, 2.533e3],
@@ -103,8 +105,6 @@ def handle_button_clicked(message):
                             mass=100)
                             
         agent.update_target_network(agent_dyn)
-
-        print(f"Episode {episode+1}: Total Reward: {0}")
 
     return agent
     
