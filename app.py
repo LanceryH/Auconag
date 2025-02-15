@@ -1,13 +1,14 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 from constants import *
-from dynamic_class import *
+from classes.dynamic_class import *
 from system import *
-from agent_class import *
+from classes.agent_class import *
 import numpy as np
 import time
 import numpy as np
-from simulation_class import *
+from classes.simulation_class import *
+from classes.body_class import *
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -60,30 +61,39 @@ def handle_button_clicked(message):
 
 @socketio.on('button_test')
 def handle_button_clicked(message):
-    dynamic = Dynamic([-6545e3, -3490e3, 2500e3],[-3.457e3, 6.618e3, 2.533e3],[0, 0, 0],100)
-
-    agent = Agent(dynamic, 9, 3)
+    # Define the agent initial dynamic
+    agent = Agent(Dynamic(pos=[-6545e3, -3490e3, 2500e3],
+                          vel=[-3.457e3, 6.618e3, 2.533e3],
+                          acc=[0, 0, 0],
+                          mass=100))
     
-    simul = Simulation(agent)
+    # Define the earth initial dynamic
+    earth = Body(Dynamic(pos=[0, 0, 0],
+                         vel=[0, 0, 0],
+                         acc=[0, 0, 0],
+                         mass=6e24))
+    
+    # Define the simulation
+    simul = Simulation(agent, earth)
 
     for episode in range(EPISODES):
-        socketio.emit('803', FREQ_AFF)
-
         while agent.active:
             simul.update()
 
             if simul.is_ready_to_send:
-                socketio.emit('801', agent.dynamic.state[:3])
-                socketio.emit('802', min(FREQ_SIM, int(simul.step/simul.freq_sim_max)))
+                socketio.emit('801', agent.dynamic.state)
+                socketio.emit('802', simul.freq_minimal)
                 
         print(f"Episode {episode+1}: Total Reward: {agent.total_reward}")
 
+        # Restart the agent dynamic
         dynamic = Dynamic(pos=[-6545e3, -3490e3, 2500e3],
-                            vel=[-3.457e3, 6.618e3, 2.533e3],
-                            acc=[0, 0, 0],
-                            mass=100)
+                          vel=[-3.457e3, 6.618e3, 2.533e3],
+                          acc=[0, 0, 0],
+                          mass=100)
                             
-        agent.update_target_network(dynamic)
+        agent.restart_me(dynamic)
     
 if __name__ == '__main__':
     socketio.run(app, host='127.0.0.1', port=1500)
+    socketio.emit('803', FREQ_AFF)

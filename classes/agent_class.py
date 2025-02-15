@@ -5,18 +5,8 @@ import random
 import numpy as np
 from system import gauss_jackson
 from constants import *
-from dynamic_class import *
+from classes.dynamic_class import *
 import time
-
-def freq_ctrl(extra_time):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            t0 = time.time()
-            func(*args, **kwargs)
-            t1 = time.time()
-            return (t1 - t0) + extra_time
-        return wrapper
-    return decorator
 
 # Define the Deep Q-Network (DQN)
 class DQN(nn.Module):
@@ -33,9 +23,10 @@ class DQN(nn.Module):
 
 # Define the agent
 class Agent:
-    def __init__(self, dynamic, state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01):
+    def __init__(self, dynamic, state_dim=9, action_dim=3, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01):
 
         self.dynamic: Dynamic = dynamic
+        self.new_dynamic: Dynamic = dynamic
 
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -64,7 +55,8 @@ class Agent:
             self.memory.pop(0)
         self.memory.append(transition)
     
-    def select_action(self):
+    @property
+    def action(self):
         if random.random() < self.epsilon:
             return random.randint(0, self.action_dim - 1)
         state = torch.tensor(self.dynamic.state, dtype=torch.float32).to(self.device).unsqueeze(0)
@@ -72,6 +64,9 @@ class Agent:
             return torch.argmax(self.policy_net(state)).item()
     
     def train(self):
+        self.store_transition((self.dynamic.state, self.action, self.get_reward, self.new_dynamic.state, self.active))
+        self.total_reward += self.get_reward
+
         if len(self.memory) < self.batch_size:
             return
         batch = random.sample(self.memory, self.batch_size)
@@ -95,49 +90,20 @@ class Agent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
     
-    def update_target_network(self, new_dinamic):
+    def restart_me(self, new_dinamic):
+        """Restart the agent dynamic/reward without changing the neural network."""
+        
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.dynamic.update_to(new_dinamic)
         self.total_reward = 0
         self.active = True
-
-    def update_state(self, action):
-        x, y, z, vx, vy, vz, ax, ay, az = self.dynamic.state
-
-        thrust_x = 0
-        thrust_y = 0
-        thrust_z = 0
-
-        if action == 0:
-            thrust_x = 150
-
-        elif action == 1:
-            thrust_y = 150
-            
-        elif action == 2:
-            thrust_z = 150
-        
-        ax = thrust_x
-        ay = thrust_y
-        az = thrust_z
-
-
-        new_dyn = gauss_jackson(np.array([[x, y, z, vx, vy, vz, ax, ay, az],[0,0,0,0,0,0,0,0,0]]), 10, [self.dynamic.mass, EARTH_MASS])
-
-        d = np.linalg.norm([x,y,z])
-        v = np.linalg.norm([vx,vy,vz])
-
-        reward = -abs(d-6371e3) -abs(v) # Reward staying centered & stable speed
-        self.active = not (d > 15371e3 or d < 6371e3) # Reset if altitude exceeds initial height
-
-        return new_dyn, reward
     
-    @freq_ctrl(0)
-    def train_me(self):
-        action = self.select_action()
-        next_dynamic, reward = self.update_state(action)
-        self.store_transition((self.dynamic.state, action, reward, next_dynamic.state, self.active))
-        self.dynamic.update_to(next_dynamic)
-        self.total_reward += reward
-        self.train()
+    @property
+    def get_reward(self):
+        d = np.linalg.norm(self.dynamic.pos)
+        v = np.linalg.norm(self.dynamic.vel)
+
+        reward = -abs(d-6371e3) -abs(v)
+        self.active = not (d > 15371e3 or d < 6371e3)
+        return reward
 

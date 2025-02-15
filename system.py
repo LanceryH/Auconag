@@ -1,5 +1,5 @@
 import numpy as np
-from dynamic_class import *
+from classes.dynamic_class import *
 from constants import *
 
 def force(m1, X1, m2, X2):
@@ -49,10 +49,11 @@ def verlet(t0, tf, y, N, M):
         t += h
     return y
 
-def gauss_jackson(y, N, M):
+def gauss_jackson(y, M):
     """Gauss-Jackson implicit predictor-corrector solver."""
+    y = np.array(y)
     t = 0
-    h = SIM_STEP / N
+    h = SIM_STEP / SIM_N
     # Initial steps using Verlet integration
     y_prev = y - h * f(t, y, M)
     y_curr = y
@@ -65,4 +66,4 @@ def gauss_jackson(y, N, M):
         y_curr = y_corr
         t += h
     
-    return Dynamic(pos=y_curr[0][:3], vel=y_curr[0][3:6], acc=y_curr[0][6:9], mass=M[0])
+    return Dynamic(pos=y_curr[0][:3], vel=y_curr[0][3:6], acc=y_curr[0][6:9], mass=M[0]), Dynamic(pos=y_curr[1][:3], vel=y_curr[1][3:6], acc=y_curr[1][6:9], mass=M[1])
