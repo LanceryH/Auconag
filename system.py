@@ -1,5 +1,5 @@
 import numpy as np
-from dynamic import *
+from dynamic_class import *
 from constants import *
 
 def force(m1, X1, m2, X2):

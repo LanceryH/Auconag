@@ -5,7 +5,18 @@ import random
 import numpy as np
 from system import gauss_jackson
 from constants import *
-from dynamic import *
+from dynamic_class import *
+import time
+
+def freq_ctrl(extra_time):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            t0 = time.time()
+            func(*args, **kwargs)
+            t1 = time.time()
+            return (t1 - t0) + extra_time
+        return wrapper
+    return decorator
 
 # Define the Deep Q-Network (DQN)
 class DQN(nn.Module):
@@ -21,7 +32,7 @@ class DQN(nn.Module):
         return self.fc3(x)
 
 # Define the agent
-class DQNAgent:
+class Agent:
     def __init__(self, dynamic, state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01):
 
         self.dynamic: Dynamic = dynamic
@@ -121,6 +132,7 @@ class DQNAgent:
 
         return new_dyn, reward
     
+    @freq_ctrl(0)
     def train_me(self):
         action = self.select_action()
         next_dynamic, reward = self.update_state(action)
@@ -128,3 +140,4 @@ class DQNAgent:
         self.dynamic.update_to(next_dynamic)
         self.total_reward += reward
         self.train()
+
