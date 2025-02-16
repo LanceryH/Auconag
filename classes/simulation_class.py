@@ -24,6 +24,12 @@ class Simulation:
     send_status = False
     freq_sim_max = 0
 
+    def add_agent(self):
+        self.agent = Agent(Dynamic(pos=[-6545e3, -3490e3, 2500e3],
+                                   vel=[-3.457e3, 6.618e3, 2.533e3],
+                                   acc=[0, 0, 0],
+                                   mass=100))
+
     @freq_ctrl
     def update(self):
         self.live_aff = time.time() - self.start

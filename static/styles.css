@@ -94,6 +94,21 @@ nav ul li button {
   font-size: 16px;
 }
 
+input {
+  padding: 5px;
+  border-style: solid;
+  border-color: white;
+  background-color: black;
+  text-decoration: none;
+  color: #ffffff; /* White text color for navigation links */
+  font-weight: bold;
+  font-size: 16px;
+}
+
+input:focus {
+  border-color: #ffd700; /* Change text color on hover */
+}
+
 nav ul li button:hover {
   color: #ffd700; /* Change text color on hover */
 }

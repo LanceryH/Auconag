@@ -9,6 +9,7 @@ import time
 import numpy as np
 from classes.simulation_class import *
 from classes.body_class import *
+import multiprocessing as mp
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -28,9 +29,36 @@ def handle_button_clicked(message):
 
 @socketio.on('button_run')
 def handle_button_clicked(message):
-    Y = np.array([[-6545e3, -3490e3, 2500e3, -3.457e3, 6.618e3, 2.533e3, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]])
-    M = np.array([100, 6e24])
+    # Define the agent initial dynamic
+    simulation = Simulation()
+    simulation.add_agent()
+    simulation.add_earth()
+    simulation.add_moon()
+
+    agent1 = Agent(Dynamic(pos=[-6545e3, -3490e3, 2500e3],
+                           vel=[-3.457e3, 6.618e3, 2.533e3],
+                           acc=[0, 0, 0],
+                           mass=100))
     
+    agent2 = Agent(Dynamic(pos=[-6745e3, -3490e3, 2500e3],
+                           vel=[-3.457e3, 6.618e3, 2.533e3],
+                           acc=[0, 0, 0],
+                           mass=100))
+    
+    # Define the earth initial dynamic
+    earth = Body(Dynamic(pos=[0, 0, 0],
+                         vel=[0, 0, 0],
+                         acc=[0, 0, 0],
+                         mass=6e24))
+    
+    # Define the moon initial dynamic
+    moon = Body(Dynamic(pos=[384.4e6, 0, 0], 
+                        vel=[0, 1.022e3, 0],    
+                        acc=[0, 0, 0],
+                        mass=7.35e22)) 
+    
+    agents = [agent1, agent2]
+
     start = time.time()
     live_sim = 0
     live_aff = 0
@@ -42,14 +70,26 @@ def handle_button_clicked(message):
     while live_sim <= end:
 
         t0 = time.time()
-        Y = gauss_jackson(0, step, Y, 10, M)
+
+        for agent in agents:
+            agent_new_dyn, earth_new_dyn, moon_new_dyn = gauss_jackson([agent.dynamic.state, earth.dynamic.state, moon.dynamic.state],
+                                                                       [agent.dynamic.mass, earth.dynamic.mass, moon.dynamic.mass])
+
+
+            agent.dynamic.update_to(agent_new_dyn)
+        earth.dynamic.update_to(earth_new_dyn)
+        moon.dynamic.update_to(moon_new_dyn)
+
         live_sim += step
         live_aff = time.time() - start
         t1 = time.time()
 
         if (live_aff <= tic) & (send_status == False):
-            socketio.emit('801', (Y[0][:3]).tolist())
-            socketio.emit('802', min(FREQ_SIM, int(step/(t1-t0))))
+            socketio.emit('700', agent1.dynamic.state[:3])
+            socketio.emit('701', earth.dynamic.state[:3])
+            socketio.emit('702', moon.dynamic.state[:3])
+            socketio.emit('800', int(1/(t1-t0)))
+
             send_status = True
 
         if live_aff > tic:

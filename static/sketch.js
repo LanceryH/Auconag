@@ -4,7 +4,9 @@ let freq_sim = 0;
 let freq_aff = 0;
 
 function preload() {
-    img = loadImage(imagePath); // Use the image path passed from HTML
+    img_earth = loadImage(imagePath_earth); 
+    img_moon = loadImage(imagePath_moon); 
+
 }
 
 function setup() {
@@ -16,20 +18,20 @@ function setup() {
     background(220);
 
     socket = io(); 
-    socket.on('800', function(data) {
-        sat_pos_ini = data;
-        create_clicked = true;
+    socket.on('700', function(data) {
+        agent_pos = data;
     });
-    socket.on('801', function(data) {
-        sat_pos_fin = data;
+    socket.on('701', function(data) {
+        earth_pos = data;
+    });
+    socket.on('702', function(data) {
+        moon_pos = data;
         run_clicked = true;
     });
-    socket.on('802', function(data) {
+    socket.on('800', function(data) {
         freq_sim = data;
     });
-    socket.on('803', function(data) {
-        freq_aff = data;
-    });
+
 
     const button_create = document.getElementById('create');
     button_create.addEventListener('click', () => {
@@ -51,33 +53,33 @@ function setup() {
 function draw() {
     background(0);
     orbitControl(1, 1, 1);
-    scale(0.04);
-
-    push();
-    texture(img);
-    strokeWeight(0);
-    rotateX(0);
-    rotateY(-180);
-    rotateZ(0);
-    sphere(6371, 24, 24);
-    pop();
-
-    if (create_clicked) {
-        push();
-        strokeWeight(16);
-        stroke(255,0,0);
-        beginShape(POINTS);
-        vertex(sat_pos_ini[0]/1000, sat_pos_ini[1]/1000, sat_pos_ini[2]/1000);
-        endShape();
-        pop();
-    }
-
+    scale(0.02);
     if (run_clicked) {
+        push();
+        texture(img_earth);
+        strokeWeight(0);
+        rotateX(0);
+        rotateY(-180);
+        rotateZ(0);
+        translate(earth_pos[0]/1e3, earth_pos[1]/1e3, earth_pos[2]/1e3);
+        sphere(6371, 24, 24);
+        pop();
+        
+        push();
+        texture(img_moon);
+        strokeWeight(0);
+        rotateX(0);
+        rotateY(-180);
+        rotateZ(0);
+        translate(moon_pos[0]/1e3, moon_pos[1]/1e3, moon_pos[2]/1e3);
+        sphere(6371, 24, 24);
+        pop();
+        
         push();
         strokeWeight(16);
         stroke(0,255,0);
         beginShape(POINTS);
-        vertex(sat_pos_fin[0]/1000, sat_pos_fin[1]/1000, sat_pos_fin[2]/1000);
+        vertex(agent_pos[0]/1e3, agent_pos[1]/1e3, agent_pos[2]/1e3);
         endShape();
         pop();
     }

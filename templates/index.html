@@ -5,7 +5,8 @@
     <script src="{{ url_for('static', filename='libraries/p5.min.js') }}"></script>
     <script src="{{ url_for('static', filename='sketch.js') }}"></script> 
     <script>
-        const imagePath = "{{ url_for('static', filename='assets/map.jpg') }}"; // Pass image path
+        const imagePath_earth = "{{ url_for('static', filename='assets/map_earth.jpg') }}";
+        const imagePath_moon = "{{ url_for('static', filename='assets/map_moon.jpg') }}";
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
@@ -22,6 +23,7 @@
             <li><button id="test">Test</a></li>
             </ul>
         </nav>
+        <input id="input"></input>
         <div class="infos">
             <div class="info">SPEED UP: <span id='sim'></span></div>
             <div class="info">FPS: <span id='aff'></span></div>

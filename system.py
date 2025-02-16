@@ -66,4 +66,8 @@ def gauss_jackson(y, M):
         y_curr = y_corr
         t += h
     
-    return Dynamic(pos=y_curr[0][:3], vel=y_curr[0][3:6], acc=y_curr[0][6:9], mass=M[0]), Dynamic(pos=y_curr[1][:3], vel=y_curr[1][3:6], acc=y_curr[1][6:9], mass=M[1])
+    results = []
+    for i in range(len(M)):
+        results.append(Dynamic(pos=y_curr[i][:3], vel=y_curr[i][3:6], acc=y_curr[i][6:9], mass=M[i]))
+
+    return results
