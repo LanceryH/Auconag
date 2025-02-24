@@ -1,5 +1,5 @@
-let create_clicked = false;
-let run_clicked = false;
+let simulation_state_received = false;
+let simulation_infos_received = false;
 let freq_sim = 0;
 let freq_aff = 0;
 
@@ -19,19 +19,13 @@ function setup() {
 
     socket = io(); 
     socket.on('700', function(data) {
-        agent_pos = data;
-    });
-    socket.on('701', function(data) {
-        earth_pos = data;
-    });
-    socket.on('702', function(data) {
-        moon_pos = data;
-        run_clicked = true;
+        simulation_state = data;
+        simulation_state_received = true;
     });
     socket.on('800', function(data) {
-        freq_sim = data;
-    });
-
+      simulation_infos = data;
+      simulation_infos_received = true;
+  });
 
     const button_create = document.getElementById('create');
     button_create.addEventListener('click', () => {
@@ -52,17 +46,33 @@ function setup() {
 
 function draw() {
     background(0);
+    lights();
     orbitControl(1, 1, 1);
-    scale(0.02);
-    if (run_clicked) {
+    scale(2);
+
+    if (simulation_state_received) {
+      for (agent of simulation_state["agents"]){
+        push();
+        strokeWeight(16);
+        stroke(0,255,0);
+        beginShape(POINTS);
+        vertex(agent[0]/1e5, 
+               agent[1]/1e5, 
+               agent[2]/1e5);
+        endShape();
+        pop();
+      }
+
         push();
         texture(img_earth);
         strokeWeight(0);
         rotateX(0);
         rotateY(-180);
         rotateZ(0);
-        translate(earth_pos[0]/1e3, earth_pos[1]/1e3, earth_pos[2]/1e3);
-        sphere(6371, 24, 24);
+        translate(simulation_state["earth"][0]/1e5, 
+                  simulation_state["earth"][1]/1e5, 
+                  simulation_state["earth"][2]/1e5);
+        sphere(63.71, 24, 24);
         pop();
         
         push();
@@ -71,21 +81,18 @@ function draw() {
         rotateX(0);
         rotateY(-180);
         rotateZ(0);
-        translate(moon_pos[0]/1e3, moon_pos[1]/1e3, moon_pos[2]/1e3);
-        sphere(6371, 24, 24);
-        pop();
-        
-        push();
-        strokeWeight(16);
-        stroke(0,255,0);
-        beginShape(POINTS);
-        vertex(agent_pos[0]/1e3, agent_pos[1]/1e3, agent_pos[2]/1e3);
-        endShape();
+        translate(simulation_state["moon"][0]/1e5, 
+                  simulation_state["moon"][1]/1e5, 
+                  simulation_state["moon"][2]/1e5);
+        sphere(63.71, 24, 24);
         pop();
     }
 
-    document.getElementById("sim").textContent=freq_sim;
-    document.getElementById("aff").textContent=freq_aff;
+    if (simulation_infos_received) {
+      document.getElementById("sim").textContent=simulation_infos["freq_sim_max"];
+      document.getElementById("aff").textContent=simulation_infos["live_sim"];
+      document.getElementById("nbage").textContent=simulation_infos["nb_agents"];
+    }
 }
 
 function windowResized() {
@@ -93,3 +100,4 @@ function windowResized() {
     let height_live = document.getElementById('contain').clientHeight;
     resizeCanvas(width_live, height_live);
   }
+  
